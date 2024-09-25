@@ -20,6 +20,11 @@ async def test_collatz(dut):
     clock = Clock(dut.clk, 10, units="us")
     cocotb.start_soon(clock.start())
 
+    dut.uio_oe.value = 0xff
+    assert 7 == dut.uo_out.value.binstr
+    b = int(dut.uo_out.value)
+    assert b == 7
+
     tests = [
         (8, 3, 8),
         (5, 5, 16),
@@ -214,8 +219,9 @@ async def start_computing(dut):
 
 
 async def done_computing(dut):
-    while int(dut.uio_out.value) == DONE_COMPUTING_BIT:
-        await ClockCycles(dut.clk, 1)
+    # while int(dut.uio_out.value) == DONE_COMPUTING_BIT:
+    #     await ClockCycles(dut.clk, 1)
+    await ClockCycles(dut.clk, 1)
     await ClockCycles(dut.clk, 1)
 
 

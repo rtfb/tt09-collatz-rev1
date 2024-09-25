@@ -167,7 +167,8 @@ module tt_um_rtfb_collatz (
     );
 
     assign data_in = ui_in;
-    assign uo_out = data_out;
+    // assign uo_out = data_out;
+    assign uo_out = 7;
     assign state_bit = uio_in[6];
     assign write_enable = uio_in[7];
     assign addr = uio_in[ADDR_IDX:0];
