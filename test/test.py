@@ -10,11 +10,35 @@ BITS = 144
 BYTES = BITS >> 3
 READ_PATH_RECORD_BIT = 1 << 5
 START_COMPUTING_BIT = 1 << 6
-DONE_COMPUTING_BIT = 1 << 7
+DONE_COMPUTING_BIT = 1 << 5
 WRITE_ENABLE_BIT = 1 << 7
 
 
 @cocotb.test()
+async def test_countdown(dut):
+    dut._log.info("start")
+    clock = Clock(dut.clk, 10, units="us")
+    cocotb.start_soon(clock.start())
+
+    tests = [
+        5, 100,
+    ]
+
+    for input in tests:
+        # reset
+        dut._log.info("reset")
+        dut.rst_n.value = 0
+        await ClockCycles(dut.clk, 20)
+        dut.rst_n.value = 1
+        await ClockCycles(dut.clk, 20)
+
+        # set input
+        await set_input(dut, input)
+        await start_computing(dut)
+        await done_computing(dut)
+
+
+# @cocotb.test()
 async def test_collatz(dut):
     dut._log.info("start")
     clock = Clock(dut.clk, 10, units="us")
@@ -214,9 +238,19 @@ async def start_computing(dut):
 
 
 async def done_computing(dut):
-    while int(dut.uio_out.value) == DONE_COMPUTING_BIT:
-        await ClockCycles(dut.clk, 1)
+    counter = 0
     await ClockCycles(dut.clk, 1)
+    # assert dut.uio_oe.value.binstr == '00100000'
+    assert dut.uio_out.value.binstr == '00100000'
+    while int(dut.uio_out.value) == DONE_COMPUTING_BIT:
+        counter += 1
+        await ClockCycles(dut.clk, 1)
+        # assert dut.uio_oe.value.binstr == '00100000'
+        if counter > 1000:
+            # assert counter == 0, 'stop the count!'
+            break
+    await ClockCycles(dut.clk, 1)
+    # assert dut.uio_oe.value.binstr == '00100000'
 
 
 async def read_n_byte_num(dut, nbytes, extra_bits=0):
