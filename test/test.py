@@ -29,6 +29,7 @@ async def test_countdown(dut):
         dut._log.info("reset")
         dut.rst_n.value = 0
         await ClockCycles(dut.clk, 20)
+        dut.uio_in = 0
         dut.rst_n.value = 1
         await ClockCycles(dut.clk, 20)
 
